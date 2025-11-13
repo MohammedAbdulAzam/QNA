@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Quiz Results: {{ attempt.quiz.name }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h2>Your Score: 
+                        {% if attempt.score is not none %}
+                            {{ "%.1f"|format(attempt.score) }}%
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </h2>
+                    <p class="text-muted">Completed on {{ attempt.completed_at.strftime('%Y-%m-%d at %H:%M') }}</p>
+                </div>
+                
+                <h5 class="mb-3">Question Breakdown:</h5>
+                <div class="accordion" id="questionsAccordion">
+                    {% for answer in attempt.answers %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ loop.index }}">
+                            <button class="accordion-button {% if not answer.is_correct %}bg-danger text-white{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
+                                Question {{ loop.index }}: {% if answer.is_correct %}Correct{% else %}Incorrect{% endif %}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#questionsAccordion">
+                            <div class="accordion-body">
+                                <p><strong>Question:</strong> 
+                                    {% if answer.question %}
+                                        {{ answer.question.text }}
+                                    {% else %}
+                                        Question not available
+                                    {% endif %}
+                                </p>
+                                <p><strong>Your Answer:</strong> 
+                                    {% if answer.question %}
+                                        {{ answer.question['option' ~ answer.selected_option] }}
+                                    {% else %}
+                                        Answer not available
+                                    {% endif %}
+                                </p>
+                                <p><strong>Correct Answer:</strong> 
+                                    {% if answer.question %}
+                                        {{ answer.question['option' ~ answer.question.correct_option] }}
+                                    {% else %}
+                                        Correct answer not available
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <a href="{{ url_for('user.performance') }}" class="btn btn-primary me-2">View Performance</a>
+                    <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

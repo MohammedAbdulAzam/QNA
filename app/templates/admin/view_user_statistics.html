@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">User Statistics: {{ user.username }}</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>User Details</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Age:</strong> {{ user.age if user.age else 'Not specified' }}</p>
+                <p><strong>Interests:</strong> {{ user.interests if user.interests else 'Not specified' }}</p>
+                <p><strong>Account Created:</strong> {{ user.created_at.strftime('%Y-%m-%d') }}</p>
+                <p><strong>Total Quiz Attempts:</strong> {{ user.quiz_attempts|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Average Scores by Subject</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="userSubjectChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Quiz Attempt History</h4>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Quiz</th>
+                    <th>Subject</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in quiz_attempts %}
+                <tr>
+                    <td>{{ attempt.name }}</td>
+                    <td>{{ attempt.subject_name }}</td>
+                    <td>{{ "%.1f"|format(attempt.score) }}%</td>
+                    <td>{{ attempt.completed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No quiz attempts yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<a href="{{ url_for('admin.user_statistics') }}" class="btn btn-primary">Back to All Users</a>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // User Subject Chart
+    const userSubjectCtx = document.getElementById('userSubjectChart').getContext('2d');
+    new Chart(userSubjectCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ subject_names|tojson|safe }},
+            datasets: [{
+                label: 'Average Score %',
+                data: {{ subject_scores|tojson|safe }},
+                backgroundColor: 'rgba(222, 247, 254, 0.7)',
+                borderColor: 'rgba(5, 140, 195, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Average Score (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Subjects'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,73 @@
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('auth.home') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" 
+                 alt="QNA Quiz App" 
+                 height="40"
+                 class="d-inline-block align-top me-2">
+            QNA Quiz App
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.statistics') }}">Statistics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.user_statistics') }}">Users</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.dashboard') }}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.performance') }}">Performance</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.profile') }}">Profile</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+            {% if request.endpoint in ['user.dashboard', 'admin.dashboard'] %}
+<div class="search-container mb-4">
+    <form class="d-flex me-2" method="POST" action="{{ url_for('user.dashboard' if not current_user.is_admin else 'admin.dashboard') }}">
+        <input class="form-control me-2" type="search" placeholder="Search quizzes..." name="q" value="{{ search_query|default('') }}">
+        <button class="btn btn-outline-light" type="submit">Search</button>
+        {% if search_query %}
+        <a href="{{ url_for('user.dashboard' if not current_user.is_admin else 'admin.dashboard') }}" class="btn btn-outline-danger ms-2">Clear</a>
+        {% endif %}
+    </form>
+</div>
+{% endif %}
+
+            <ul class="navbar-nav">
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ current_user.username }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.quizmaster_login') }}">Quiz Master</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

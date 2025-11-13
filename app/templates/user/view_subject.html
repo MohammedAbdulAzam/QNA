@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0">{{ subject.name }}</h3>
+            </div>
+            <div class="card-body">
+                <p>{{ subject.description or 'No description available' }}</p>
+                <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Chapters</h4>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for chapter in subject.chapters %}
+                    <a href="{{ url_for('user.view_chapter', chapter_id=chapter.id) }}" class="list-group-item list-group-item-action">
+                        <h5>{{ chapter.name }}</h5>
+                        <p class="mb-1">{{ chapter.description|truncate(100) }}</p>
+                        <small>{{ chapter.quizzes|length }} quizzes</small>
+                    </a>
+                    {% else %}
+                    <div class="list-group-item">
+                        No chapters available
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">All Quizzes</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Quiz Name</th>
+                            <th>Description</th>
+                            <th>Time Limit</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quiz in subject.quizzes %}
+                        <tr>
+                            <td>{{ quiz.name }}</td>
+                            <td>{{ quiz.description or '-' }}</td>
+                            <td>{{ quiz.time_limit }} minutes</td>
+                            <td>
+                                <a href="{{ url_for('user.attempt_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary">Attempt</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">No quizzes available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

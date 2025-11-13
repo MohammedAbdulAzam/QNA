@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Your Performance</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Average Scores by Subject</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Recent Quiz Attempts</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Quiz</th>
+                            <th>Subject</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <!-- In the quiz attempts table -->
+<tbody>
+    {% for attempt in quiz_attempts %}
+    <tr>
+        <td>{{ attempt.name }}</td>
+        <td>{{ attempt.subject_name }}</td>
+        <td>{{ "%.1f"|format(attempt.score) if attempt.score is not none else "N/A" }}%</td>
+        <td>
+            {% if attempt.completed_at %}
+                {{ attempt.completed_at.strftime('%Y-%m-%d') }}
+            {% else %}
+                Not completed
+            {% endif %}
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="4" class="text-center">No completed quiz attempts yet</td>
+    </tr>
+    {% endfor %}
+</tbody>
+                </table>
+                {% if quiz_attempts|length > 5 %}
+                <div class="text-end">
+                    <a href="{{ url_for('user.dashboard') }}" class="btn btn-sm btn-outline-primary">View All Attempts</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4>Subject-wise Performance</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for stat in subject_stats %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">{{ stat.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="text-center">{{ "%.1f"|format(stat.average_score) }}%</h3>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: {{ stat.average_score }}%" aria-valuenow="{{ stat.average_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center">
+                <p>No subject statistics available yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    const performanceChart = new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ subject_names|tojson|safe }},
+            datasets: [{
+                label: 'Average Score %',
+                data: {{ subject_scores|tojson|safe }},
+                backgroundColor: 'rgba(25, 67, 139, 0.7)',
+                borderColor: 'rgba(25, 67, 139, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

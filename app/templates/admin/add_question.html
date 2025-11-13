@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Add Question to {{ quiz.name }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.text.label(class="form-label") }}
+                        {{ form.text(class="form-control", rows=3) }}
+                        {% if form.text.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.text.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.marks.label(class="form-label") }}
+                        {{ form.marks(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.option1.label(class="form-label") }}
+                        {{ form.option1(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.option2.label(class="form-label") }}
+                        {{ form.option2(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.option3.label(class="form-label") }}
+                        {{ form.option3(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.option4.label(class="form-label") }}
+                        {{ form.option4(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.correct_option.label(class="form-label") }}
+                        {{ form.correct_option(class="form-select") }}
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('admin.view_quiz', quiz_id=quiz.id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

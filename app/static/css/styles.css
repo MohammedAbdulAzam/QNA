@@ -1,0 +1,65 @@
+/* Custom styles for QNA app */
+
+/* General styles */
+body {
+    padding-bottom: 100px; /* To account for fixed footer */
+}
+
+/* Card styles */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+/* Form styles */
+.form-control:focus, .form-select:focus {
+    border-color: #058CC3;
+    box-shadow: 0 0 0 0.25rem rgba(5, 140, 195, 0.25);
+}
+
+/* Button styles */
+.btn-outline-primary {
+    color: #058CC3;
+    border-color: #058CC3;
+}
+
+.btn-outline-primary:hover {
+    background-color: #058CC3;
+    color: white;
+}
+
+/* Progress bar */
+.progress {
+    height: 10px;
+}
+
+.progress-bar {
+    background-color: #19438B;
+}
+
+/* List group items for quiz options */
+.list-group-item:hover {
+    background-color: #DEF7FE;
+    cursor: pointer;
+}
+
+/* Timer badge */
+#timer {
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+}
+
+/* Accordion styles */
+.accordion-button:not(.collapsed) {
+    background-color: #DEF7FE;
+    color: #020202;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0, 0, 0, 0.125);
+}

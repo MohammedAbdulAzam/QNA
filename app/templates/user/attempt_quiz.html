@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ quiz.name }}</h4>
+                <div id="timer" class="badge bg-danger fs-6"></div>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Question</h5>
+                <p class="card-text">{{ question.text }}</p>
+                
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="list-group mb-3">
+                        <label class="list-group-item">
+                            <input class="form-check-input me-1" type="radio" name="option" value="1">
+                            {{ question.option1 }}
+                        </label>
+                        <label class="list-group-item">
+                            <input class="form-check-input me-1" type="radio" name="option" value="2">
+                            {{ question.option2 }}
+                        </label>
+                        <label class="list-group-item">
+                            <input class="form-check-input me-1" type="radio" name="option" value="3">
+                            {{ question.option3 }}
+                        </label>
+                        <label class="list-group-item">
+                            <input class="form-check-input me-1" type="radio" name="option" value="4">
+                            {{ question.option4 }}
+                        </label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Timer functionality
+    const timerElement = document.getElementById('timer');
+    let timeLeft = {{ remaining_time }};
+    
+    function updateTimer() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = Math.floor(timeLeft % 60);
+        timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            {% if attempt %}
+                window.location.href = "{{ url_for('user.quiz_result', attempt_id=attempt.id) }}";
+            {% else %}
+                window.location.href = "{{ url_for('user.dashboard') }}";
+            {% endif %}
+        } else {
+            timeLeft--;
+        }
+    }
+    
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">System Statistics</h2>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Users</h5>
+                <p class="card-text display-4">{{ user_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Subjects</h5>
+                <p class="card-text display-4">{{ subject_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Quizzes</h5>
+                <p class="card-text display-4">{{ quiz_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Questions</h5>
+                <p class="card-text display-4">{{ question_count }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Average Scores by Subject</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="subjectChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Top 10 Quizzes by Attempts</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="quizChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Subject Chart
+    const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+    new Chart(subjectCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ subject_names|tojson|safe }},
+            datasets: [{
+                label: 'Average Score %',
+                data: {{ subject_scores|tojson|safe }},
+                backgroundColor: 'rgba(5, 140, 195, 0.7)',
+                borderColor: 'rgba(5, 140, 195, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Average Score (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Subjects'
+                    }
+                }
+            }
+        }
+    });
+
+    // Quiz Chart
+    const quizCtx = document.getElementById('quizChart').getContext('2d');
+    new Chart(quizCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ quiz_names|tojson|safe }},
+            datasets: [{
+                label: 'Average Score %',
+                data: {{ quiz_scores|tojson|safe }},
+                backgroundColor: 'rgba(25, 67, 139, 0.7)',
+                borderColor: 'rgba(25, 67, 139, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Average Score (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Quizzes'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

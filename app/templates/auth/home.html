@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row align-items-center">
+        <!-- Left side with image -->
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='images/quiz.png') }}" 
+                 alt="Quiz App" 
+                 class="img-fluid rounded shadow"
+                 style="max-width: 500px;">
+        </div>
+        
+        <!-- Right side with buttons -->
+        <div class="col-md-6">
+            <div class="text-center">
+                <h1 class="display-4 mb-4">Welcome to QNA</h1>
+                <p class="lead mb-5">Test your knowledge!</p>
+                
+                <div class="d-grid gap-3 col-md-8 mx-auto">
+                    <a href="{{ url_for('auth.login') }}" 
+                       class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>User Login
+                    </a>
+                    
+                    <a href="{{ url_for('auth.register') }}" 
+                       class="btn btn-success btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>User Register
+                    </a>
+                    
+                    <a href="{{ url_for('auth.quizmaster_login') }}" 
+                       class="btn btn-warning btn-lg">
+                        <i class="fas fa-trophy me-2"></i>Quizmaster Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

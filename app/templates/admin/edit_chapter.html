@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Edit Chapter: {{ chapter.name }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=4) }}
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('admin.view_subject', subject_id=chapter.subject_id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Chapter Quizzes</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Quiz Name</th>
+                            <th>Description</th>
+                            <th>Time Limit</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quiz in chapter.quizzes %}
+                        <tr>
+                            <td>{{ quiz.name }}</td>
+                            <td>{{ quiz.description|truncate(50) }}</td>
+                            <td>{{ quiz.time_limit }} mins</td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a href="{{ url_for('admin.view_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                                <form method="POST" action="{{ url_for('admin.delete_quiz', quiz_id=quiz.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">No quizzes in this chapter</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="text-end mt-3">
+                    <a href="{{ url_for('admin.add_quiz', subject_id=chapter.subject_id) }}?chapter_id={{ chapter.id }}" class="btn btn-primary btn-sm">
+                        Add New Quiz to This Chapter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
