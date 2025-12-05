@@ -29,6 +29,31 @@
                         {{ form.time_limit.label(class="form-label") }}
                         {{ form.time_limit(class="form-control") }}
                     </div>
+                    <div class="mb-3">
+                        {{ form.sequence_number.label(class="form-label") }}
+                        {{ form.sequence_number(class="form-control") }}
+                        <small class="form-text text-muted">Order of quiz in subject (1, 2, 3...)</small>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.max_attempts.label(class="form-label") }}
+                        {{ form.max_attempts(class="form-control") }}
+                        <small class="form-text text-muted">Number of attempts students can take</small>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.passing_score.label(class="form-label") }}
+                        {{ form.passing_score(class="form-control") }}
+                        <small class="form-text text-muted">Minimum percentage to pass</small>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.prerequisite_quiz_id.label(class="form-label") }}
+                        {{ form.prerequisite_quiz_id(class="form-control") }}
+                        <small class="form-text text-muted">Quiz that must be passed first</small>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.deadline.label(class="form-label") }}
+                        {{ form.deadline(class="form-control", type="datetime-local") }}
+                        <small class="form-text text-muted">Format: YYYY-MM-DD HH:MM</small>
+                    </div>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{{ url_for('admin.view_subject', subject_id=quiz.subject_id) }}" class="btn btn-secondary me-md-2">Cancel</a>
                         {{ form.submit(class="btn btn-primary") }}

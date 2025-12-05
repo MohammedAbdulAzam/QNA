@@ -33,10 +33,26 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'<User {self.username}>'
 
+class Teacher(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    qualifications = db.Column(db.String(200))  # e.g., "M.Sc., Ph.D."
+    degree = db.Column(db.String(100))  # e.g., "Ph.D. in Computer Science"
+    email = db.Column(db.String(120), unique=True)
+    bio = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    subjects = db.relationship('Subject', backref='teacher', lazy=True)
+
+    def __repr__(self):
+        return f'<Teacher {self.name}>'
+
 class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id', ondelete='SET NULL'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -84,23 +100,65 @@ class Quiz(db.Model):
     time_limit = db.Column(db.Integer)  # in minutes
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id', ondelete='CASCADE'), nullable=False)
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id', ondelete='SET NULL'), nullable=True)
+    sequence_number = db.Column(db.Integer, default=1)
+    max_attempts = db.Column(db.Integer, default=2)
+    passing_score = db.Column(db.Float, default=70.0)
+    deadline = db.Column(db.DateTime, nullable=True)
+    prerequisite_quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id', ondelete='SET NULL'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
+    prerequisite = db.relationship(
+        'Quiz',
+        remote_side='Quiz.id',
+        backref='dependent_quizzes',
+        foreign_keys=[prerequisite_quiz_id]
+    )
     questions = db.relationship(
-        'Question', 
-        backref='quiz', 
+        'Question',
+        backref='quiz',
         lazy=True,
         cascade='all, delete-orphan',
         passive_deletes=True
     )
     attempts = db.relationship(
-        'QuizAttempt', 
-        backref='quiz', 
+        'QuizAttempt',
+        backref='quiz',
         lazy=True,
         cascade='all, delete-orphan',
         passive_deletes=True
     )
+
+    def is_unlocked_for_user(self, user):
+        """Check if quiz is unlocked for given user"""
+        if not self.prerequisite_quiz_id:
+            return True
+
+        prerequisite_attempts = QuizAttempt.query.filter_by(
+            user_id=user.id,
+            quiz_id=self.prerequisite_quiz_id,
+            completed=True
+        ).all()
+
+        for attempt in prerequisite_attempts:
+            if attempt.score >= self.prerequisite.passing_score:
+                return True
+        return False
+
+    def attempts_remaining_for_user(self, user):
+        """Return number of attempts remaining"""
+        completed_attempts = QuizAttempt.query.filter_by(
+            user_id=user.id,
+            quiz_id=self.id,
+            completed=True
+        ).count()
+        return max(0, self.max_attempts - completed_attempts)
+
+    def is_past_deadline(self):
+        """Check if deadline has passed"""
+        if not self.deadline:
+            return False
+        return datetime.utcnow() > self.deadline
 
     def __repr__(self):
         return f'<Quiz {self.name}>'

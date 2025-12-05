@@ -49,11 +49,41 @@ def profile():
 @user.route('/subject/<int:subject_id>/quizzes')
 def view_quizzes(subject_id):
     subject = Subject.query.get_or_404(subject_id)
-    return render_template('user/view_quizzes.html', subject=subject)
+
+    # Prepare quiz access information for each quiz
+    quiz_access_info = []
+    for quiz in sorted(subject.quizzes, key=lambda q: q.sequence_number):
+        is_unlocked = quiz.is_unlocked_for_user(current_user)
+        attempts_remaining = quiz.attempts_remaining_for_user(current_user)
+        is_past_deadline = quiz.is_past_deadline()
+
+        quiz_access_info.append({
+            'quiz': quiz,
+            'is_unlocked': is_unlocked,
+            'attempts_remaining': attempts_remaining,
+            'is_past_deadline': is_past_deadline,
+            'can_attempt': is_unlocked and attempts_remaining > 0 and not is_past_deadline
+        })
+
+    return render_template('user/view_quizzes.html', subject=subject, quiz_access_info=quiz_access_info)
 @user.route('/quiz/<int:quiz_id>/attempt', methods=['GET', 'POST'])
 def attempt_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
-    
+
+    # Access control checks
+    if not quiz.is_unlocked_for_user(current_user):
+        flash('This quiz is locked. Complete the prerequisite quiz first.', 'warning')
+        return redirect(url_for('user.view_quizzes', subject_id=quiz.subject_id))
+
+    if quiz.is_past_deadline():
+        flash('The deadline for this quiz has passed.', 'danger')
+        return redirect(url_for('user.view_quizzes', subject_id=quiz.subject_id))
+
+    attempts_remaining = quiz.attempts_remaining_for_user(current_user)
+    if attempts_remaining <= 0:
+        flash('You have used all attempts for this quiz.', 'danger')
+        return redirect(url_for('user.view_quizzes', subject_id=quiz.subject_id))
+
     # Check for existing incomplete attempt
     existing_attempt = QuizAttempt.query.filter_by(
         user_id=current_user.id,

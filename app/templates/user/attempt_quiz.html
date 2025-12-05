@@ -5,7 +5,10 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">{{ quiz.name }}</h4>
+                <div>
+                    <h4 class="mb-0">{{ quiz.name }}</h4>
+                    <small class="text-muted">Student: {{ current_user.username }} (ID: {{ current_user.id }})</small>
+                </div>
                 <div id="timer" class="badge bg-danger fs-6"></div>
             </div>
             <div class="card-body">

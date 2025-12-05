@@ -5,7 +5,7 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0">Edit Subject: {{ subject.name }}</h4>
+                <h4 class="mb-0">Edit Teacher</h4>
             </div>
             <div class="card-body">
                 <form method="POST" action="">
@@ -22,15 +22,25 @@
                         {% endif %}
                     </div>
                     <div class="mb-3">
-                        {{ form.description.label(class="form-label") }}
-                        {{ form.description(class="form-control", rows=4) }}
+                        {{ form.qualifications.label(class="form-label") }}
+                        {{ form.qualifications(class="form-control") }}
+                        <small class="form-text text-muted">E.g., M.Sc., Ph.D.</small>
                     </div>
                     <div class="mb-3">
-                        {{ form.teacher_id.label(class="form-label") }}
-                        {{ form.teacher_id(class="form-control") }}
+                        {{ form.degree.label(class="form-label") }}
+                        {{ form.degree(class="form-control") }}
+                        <small class="form-text text-muted">E.g., Ph.D. in Computer Science</small>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.bio.label(class="form-label") }}
+                        {{ form.bio(class="form-control", rows=4) }}
                     </div>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <a href="{{ url_for('admin.teachers') }}" class="btn btn-secondary me-md-2">Cancel</a>
                         {{ form.submit(class="btn btn-primary") }}
                     </div>
                 </form>

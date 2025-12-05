@@ -1,8 +1,8 @@
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_required
 from app import db
-from app.models import Subject, Quiz, Question, User, QuizAttempt, UserAnswer, Chapter
-from app.admin.forms import SubjectForm, QuizForm, QuestionForm, ChapterForm
+from app.models import Subject, Quiz, Question, User, QuizAttempt, UserAnswer, Chapter, Teacher
+from app.admin.forms import SubjectForm, QuizForm, QuestionForm, ChapterForm, TeacherForm
 from app.utils import calculate_score
 from sqlalchemy import func
 from datetime import datetime
@@ -33,7 +33,8 @@ def dashboard():
 def add_subject():
     form = SubjectForm()
     if form.validate_on_submit():
-        subject = Subject(name=form.name.data, description=form.description.data)
+        teacher_id = form.teacher_id.data if form.teacher_id.data != 0 else None
+        subject = Subject(name=form.name.data, description=form.description.data, teacher_id=teacher_id)
         db.session.add(subject)
         db.session.commit()
         flash('Subject added successfully!', 'success')
@@ -47,12 +48,14 @@ def edit_subject(subject_id):
     if form.validate_on_submit():
         subject.name = form.name.data
         subject.description = form.description.data
+        subject.teacher_id = form.teacher_id.data if form.teacher_id.data != 0 else None
         db.session.commit()
         flash('Subject updated successfully!', 'success')
         return redirect(url_for('admin.dashboard'))
     elif request.method == 'GET':
         form.name.data = subject.name
         form.description.data = subject.description
+        form.teacher_id.data = subject.teacher_id or 0
     return render_template('admin/edit_subject.html', form=form, subject=subject)
 
 @admin.route('/subject/<int:subject_id>')
@@ -74,20 +77,28 @@ def delete_subject(subject_id):
 @admin.route('/quiz/<int:subject_id>/add', methods=['GET', 'POST'])
 def add_quiz(subject_id):
     subject = Subject.query.get_or_404(subject_id)
-    form = QuizForm()
-    form.chapter_id.choices = [(c.id, c.name) for c in subject.chapters]
-    
+    form = QuizForm(subject_id=subject_id)
+    form.chapter_id.choices = [(0, '-- No Chapter --')] + [(c.id, c.name) for c in subject.chapters]
+    form.prerequisite_quiz_id.choices = [(0, '-- No Prerequisite --')] + [
+        (q.id, f"{q.name} (Seq: {q.sequence_number})") for q in subject.quizzes
+    ]
+
     # Pre-select chapter if coming from chapter page
     if 'chapter_id' in request.args:
         form.chapter_id.data = request.args.get('chapter_id')
-    
+
     if form.validate_on_submit():
         quiz = Quiz(
             name=form.name.data,
             description=form.description.data,
             time_limit=form.time_limit.data,
             subject_id=subject.id,
-            chapter_id=form.chapter_id.data
+            chapter_id=form.chapter_id.data if form.chapter_id.data != 0 else None,
+            sequence_number=form.sequence_number.data,
+            max_attempts=form.max_attempts.data,
+            passing_score=form.passing_score.data,
+            deadline=form.deadline.data,
+            prerequisite_quiz_id=form.prerequisite_quiz_id.data if form.prerequisite_quiz_id.data != 0 else None
         )
         db.session.add(quiz)
         db.session.commit()
@@ -98,11 +109,24 @@ def add_quiz(subject_id):
 @admin.route('/quiz/<int:quiz_id>/edit', methods=['GET', 'POST'])
 def edit_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
-    form = QuizForm()
+    form = QuizForm(subject_id=quiz.subject_id)
+
+    # Set up choices for dropdowns
+    form.chapter_id.choices = [(0, '-- No Chapter --')] + [(c.id, c.name) for c in quiz.subject.chapters]
+    form.prerequisite_quiz_id.choices = [(0, '-- No Prerequisite --')] + [
+        (q.id, f"{q.name} (Seq: {q.sequence_number})") for q in quiz.subject.quizzes if q.id != quiz.id
+    ]
+
     if form.validate_on_submit():
         quiz.name = form.name.data
         quiz.description = form.description.data
         quiz.time_limit = form.time_limit.data
+        quiz.chapter_id = form.chapter_id.data if form.chapter_id.data != 0 else None
+        quiz.sequence_number = form.sequence_number.data
+        quiz.max_attempts = form.max_attempts.data
+        quiz.passing_score = form.passing_score.data
+        quiz.deadline = form.deadline.data
+        quiz.prerequisite_quiz_id = form.prerequisite_quiz_id.data if form.prerequisite_quiz_id.data != 0 else None
         db.session.commit()
         flash('Quiz updated successfully!', 'success')
         return redirect(url_for('admin.view_subject', subject_id=quiz.subject_id))
@@ -110,6 +134,12 @@ def edit_quiz(quiz_id):
         form.name.data = quiz.name
         form.description.data = quiz.description
         form.time_limit.data = quiz.time_limit
+        form.chapter_id.data = quiz.chapter_id or 0
+        form.sequence_number.data = quiz.sequence_number
+        form.max_attempts.data = quiz.max_attempts
+        form.passing_score.data = quiz.passing_score
+        form.deadline.data = quiz.deadline
+        form.prerequisite_quiz_id.data = quiz.prerequisite_quiz_id or 0
     return render_template('admin/edit_quiz.html', form=form, quiz=quiz)
 
 @admin.route('/quiz/<int:quiz_id>/view')
@@ -335,3 +365,55 @@ def delete_chapter(chapter_id):
     db.session.commit()
     flash('Chapter deleted successfully!', 'success')
     return redirect(url_for('admin.view_subject', subject_id=subject_id))
+
+# Teacher Management Routes
+@admin.route('/teachers')
+def teachers():
+    teachers = Teacher.query.order_by(Teacher.name).all()
+    return render_template('admin/teachers.html', teachers=teachers)
+
+@admin.route('/teacher/add', methods=['GET', 'POST'])
+def add_teacher():
+    form = TeacherForm()
+    if form.validate_on_submit():
+        teacher = Teacher(
+            name=form.name.data,
+            qualifications=form.qualifications.data,
+            degree=form.degree.data,
+            email=form.email.data,
+            bio=form.bio.data
+        )
+        db.session.add(teacher)
+        db.session.commit()
+        flash('Teacher added successfully!', 'success')
+        return redirect(url_for('admin.teachers'))
+    return render_template('admin/add_teacher.html', form=form)
+
+@admin.route('/teacher/<int:teacher_id>/edit', methods=['GET', 'POST'])
+def edit_teacher(teacher_id):
+    teacher = Teacher.query.get_or_404(teacher_id)
+    form = TeacherForm()
+    if form.validate_on_submit():
+        teacher.name = form.name.data
+        teacher.qualifications = form.qualifications.data
+        teacher.degree = form.degree.data
+        teacher.email = form.email.data
+        teacher.bio = form.bio.data
+        db.session.commit()
+        flash('Teacher updated successfully!', 'success')
+        return redirect(url_for('admin.teachers'))
+    elif request.method == 'GET':
+        form.name.data = teacher.name
+        form.qualifications.data = teacher.qualifications
+        form.degree.data = teacher.degree
+        form.email.data = teacher.email
+        form.bio.data = teacher.bio
+    return render_template('admin/edit_teacher.html', form=form, teacher=teacher)
+
+@admin.route('/teacher/<int:teacher_id>/delete', methods=['POST'])
+def delete_teacher(teacher_id):
+    teacher = Teacher.query.get_or_404(teacher_id)
+    db.session.delete(teacher)
+    db.session.commit()
+    flash('Teacher deleted successfully!', 'success')
+    return redirect(url_for('admin.teachers'))

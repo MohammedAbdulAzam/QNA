@@ -25,6 +25,10 @@
                         {{ form.description.label(class="form-label") }}
                         {{ form.description(class="form-control", rows=4) }}
                     </div>
+                    <div class="mb-3">
+                        {{ form.teacher_id.label(class="form-label") }}
+                        {{ form.teacher_id(class="form-control") }}
+                    </div>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
                         {{ form.submit(class="btn btn-primary") }}

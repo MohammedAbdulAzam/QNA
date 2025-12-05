@@ -9,6 +9,20 @@
             </div>
             <div class="card-body">
                 <p>{{ subject.description or 'No description available' }}</p>
+
+                {% if subject.teacher %}
+                <div class="card-text mb-3">
+                    <h6>Teacher Information:</h6>
+                    <p class="mb-1"><strong>Name:</strong> {{ subject.teacher.name }}</p>
+                    {% if subject.teacher.qualifications %}
+                    <p class="mb-1"><strong>Qualifications:</strong> {{ subject.teacher.qualifications }}</p>
+                    {% endif %}
+                    {% if subject.teacher.degree %}
+                    <p class="mb-1"><strong>Degree:</strong> {{ subject.teacher.degree }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
             </div>
         </div>

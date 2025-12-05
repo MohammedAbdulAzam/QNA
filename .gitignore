@@ -75,3 +75,11 @@ wheels/
 # Backup files
 *.bak
 *.tmp
+
+MIGRATION_INSTRUCTIONS.md
+
+migrate_database.py
+
+.claude/
+
+

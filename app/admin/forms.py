@@ -1,24 +1,43 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, IntegerField, SelectField, SubmitField
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
+from wtforms import StringField, TextAreaField, IntegerField, SelectField, SubmitField, DateTimeField
+from wtforms.validators import DataRequired, Length, NumberRange, Optional, Email
 from app.models import Chapter, Subject
 class SubjectForm(FlaskForm):
     name = StringField('Subject Name', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description')
+    teacher_id = SelectField('Assign Teacher', coerce=int, validators=[Optional()])
     submit = SubmitField('Save')
+
+    def __init__(self, *args, **kwargs):
+        super(SubjectForm, self).__init__(*args, **kwargs)
+        from app.models import Teacher
+        self.teacher_id.choices = [(0, '-- No Teacher --')] + [
+            (t.id, t.name) for t in Teacher.query.order_by(Teacher.name).all()
+        ]
 
 class QuizForm(FlaskForm):
     name = StringField('Quiz Name', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description')
     time_limit = IntegerField('Time Limit (minutes)', validators=[DataRequired(), NumberRange(min=1)])
     chapter_id = SelectField('Chapter', coerce=int, validators=[Optional()], choices=[], validate_choice=False)
-    
+    sequence_number = IntegerField('Sequence Number', validators=[DataRequired(), NumberRange(min=1)], default=1)
+    max_attempts = IntegerField('Maximum Attempts', validators=[DataRequired(), NumberRange(min=1, max=10)], default=2)
+    passing_score = IntegerField('Passing Score (%)', validators=[DataRequired(), NumberRange(min=0, max=100)], default=70)
+    deadline = DateTimeField('Deadline (Optional)', format='%Y-%m-%d %H:%M', validators=[Optional()])
+    prerequisite_quiz_id = SelectField('Prerequisite Quiz', coerce=int, validators=[Optional()], choices=[], validate_choice=False)
+    submit = SubmitField('Save')
+
     def __init__(self, *args, **kwargs):
         super(QuizForm, self).__init__(*args, **kwargs)
         if 'subject_id' in kwargs:
             subject = Subject.query.get(kwargs['subject_id'])
-            self.chapter_id.choices = [(c.id, c.name) for c in subject.chapters]
-    submit = SubmitField('Save')
+            if subject:
+                self.chapter_id.choices = [(0, '-- No Chapter --')] + [
+                    (c.id, c.name) for c in subject.chapters
+                ]
+                self.prerequisite_quiz_id.choices = [(0, '-- No Prerequisite --')] + [
+                    (q.id, f"{q.name} (Seq: {q.sequence_number})") for q in subject.quizzes
+                ]
 
 class QuestionForm(FlaskForm):
     text = TextAreaField('Question Text', validators=[DataRequired()])
@@ -36,4 +55,12 @@ class QuestionForm(FlaskForm):
 class ChapterForm(FlaskForm):
     name = StringField('Chapter Name', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description')
+    submit = SubmitField('Save')
+
+class TeacherForm(FlaskForm):
+    name = StringField('Teacher Name', validators=[DataRequired(), Length(max=100)])
+    qualifications = StringField('Qualifications', validators=[Length(max=200)])
+    degree = StringField('Degree', validators=[Length(max=100)])
+    email = StringField('Email', validators=[Optional(), Email(), Length(max=120)])
+    bio = TextAreaField('Biography')
     submit = SubmitField('Save')

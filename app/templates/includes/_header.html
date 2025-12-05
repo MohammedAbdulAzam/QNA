@@ -23,6 +23,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('admin.user_statistics') }}">Users</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.teachers') }}">Teachers</a>
+                        </li>
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('user.dashboard') }}">Home</a>

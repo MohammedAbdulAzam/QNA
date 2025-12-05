@@ -9,6 +9,24 @@
             </div>
             <div class="card-body">
                 <p>{{ subject.description or 'No description available' }}</p>
+
+                {% if subject.teacher %}
+                <div class="card-text mb-3">
+                    <h6>Teacher Information:</h6>
+                    <p class="mb-1"><strong>Name:</strong> {{ subject.teacher.name }}</p>
+                    {% if subject.teacher.qualifications %}
+                    <p class="mb-1"><strong>Qualifications:</strong> {{ subject.teacher.qualifications }}</p>
+                    {% endif %}
+                    {% if subject.teacher.degree %}
+                    <p class="mb-1"><strong>Degree:</strong> {{ subject.teacher.degree }}</p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No teacher assigned to this subject yet.
+                </div>
+                {% endif %}
+
                 <div class="d-flex justify-content-between mb-3">
                     <a href="{{ url_for('admin.edit_subject', subject_id=subject.id) }}" class="btn btn-primary">Edit Subject</a>
                     <form method="POST" action="{{ url_for('admin.delete_subject', subject_id=subject.id) }}">

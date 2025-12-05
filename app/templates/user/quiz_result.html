@@ -8,6 +8,15 @@
                 <h4 class="mb-0">Quiz Results: {{ attempt.quiz.name }}</h4>
             </div>
             <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-0"><strong>Student ID:</strong> {{ attempt.user.id }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-0"><strong>Student Name:</strong> {{ attempt.user.username }}</p>
+                    </div>
+                </div>
+
                 <div class="text-center mb-4">
                     <h2>Your Score: 
                         {% if attempt.score is not none %}

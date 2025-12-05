@@ -29,14 +29,38 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for quiz in subject.quizzes %}
+                        {% for info in quiz_access_info %}
                         <tr>
-                            <td>{{ quiz.name }}</td>
-                            <td>{{ quiz.description or '-' }}</td>
-                            <td>{{ quiz.time_limit }} minutes</td>
-                            <td>{{ quiz.questions|length }}</td>
                             <td>
-                                <a href="{{ url_for('user.attempt_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary">Attempt</a>
+                                {{ info.quiz.name }}
+                                {% if not info.is_unlocked %}
+                                <span class="badge bg-warning">Locked</span>
+                                {% elif info.is_past_deadline %}
+                                <span class="badge bg-danger">Deadline Passed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ info.quiz.description or '-' }}</td>
+                            <td>{{ info.quiz.time_limit }} min</td>
+                            <td>{{ info.quiz.questions|length }}</td>
+                            <td>
+                                {% if info.can_attempt %}
+                                    <a href="{{ url_for('user.attempt_quiz', quiz_id=info.quiz.id) }}"
+                                       class="btn btn-sm btn-primary">
+                                       Attempt ({{ info.attempts_remaining }} left)
+                                    </a>
+                                {% elif not info.is_unlocked %}
+                                    <span class="text-warning">
+                                        <i class="fas fa-lock"></i> Complete prerequisite quiz first
+                                    </span>
+                                {% elif info.attempts_remaining <= 0 %}
+                                    <span class="text-danger">No attempts remaining</span>
+                                {% elif info.is_past_deadline %}
+                                    <span class="text-danger">Deadline passed</span>
+                                {% endif %}
+
+                                {% if info.quiz.deadline and not info.is_past_deadline %}
+                                <br><small class="text-muted">Due: {{ info.quiz.deadline.strftime('%Y-%m-%d %H:%M') }}</small>
+                                {% endif %}
                             </td>
                         </tr>
                         {% else %}
